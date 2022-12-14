@@ -1,0 +1,55 @@
+version: '3.4'
+
+services:
+
+  database:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_USER: test
+      POSTGRES_DB: test
+    restart: always
+    ports:
+      - 5432:5432
+    networks:
+      - internal
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  backend:
+    image: backend
+    build:
+      context: backend
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - database
+    ports:
+      - 3050:3050
+    expose:
+      - 3050
+    networks:
+      - internal
+
+  frontend:
+    image: frontend
+    build:
+      context: frontend
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - backend
+    ports:
+      - 3000:3000
+    expose:
+      - 3000
+
+volumes:
+  db-data:
+    driver: local
+
+networks:
+  internal:
+    driver: bridge
